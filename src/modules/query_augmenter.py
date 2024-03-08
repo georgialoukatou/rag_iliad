@@ -2,13 +2,11 @@ def augment_multiple_query(query, openai_client, model="gpt-3.5-turbo"):
     messages = [
         {
             "role": "system",
-            "content": "You are a helpful history assistant. Your users are asking questions about illiad. "
-            "Suggest up to five additional related questions to help them find the information they need, for the provided question. "
-            "Suggest only short questions without compound sentences. Suggest a variety of questions that cover different aspects of the topic."
-            "Make sure they are complete questions, and that they are related to the original question."
-            "Output one question per line. Do not number the questions."
+            "content": "You serve as an assistant specializing in history, particularly the Iliad. "
+            "Users seek answers about this epic. Your task is to propose supplementary questions related to their queries, aiding them in gathering necessary information."
+            "Your suggestions should be concise, covering various aspects of the topic, and fully-formed questions. Ensure the questions are closely linked to the original query.",
         },
-        {"role": "user", "content": query}
+        {"role": "user", "content": query},
     ]
 
     response = openai_client.chat.completions.create(
@@ -24,10 +22,10 @@ def augment_query_generated(query, openai_client, model="gpt-3.5-turbo"):
     messages = [
         {
             "role": "system",
-            "content": "You are illiad expert, provide an answer for the questions"
+            "content": "You are illiad expert, provide a hypothetical answer for the question. Focus on specific names and facts that happened in the Iliad.",
         },
-        {"role": "user", "content": query}
-    ] 
+        {"role": "user", "content": query},
+    ]
 
     response = openai_client.chat.completions.create(
         model=model,

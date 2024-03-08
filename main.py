@@ -1,42 +1,49 @@
-from src.modules.rag import rag
-import openai
+import argparse
 import os
+
+import openai
+from dotenv import find_dotenv, load_dotenv
 from openai import OpenAI
+
 from src.modules.query_augmenter import augment_multiple_query, augment_query_generated
-from src.modules.text_processor import chroma_collection
+from src.modules.rag import rag
+from src.modules.text_processor import get_vector_db_reference
 
-from dotenv import load_dotenv, find_dotenv
+url = "https://classics.mit.edu/Homer/iliad.mb.txt"
 
-url = 'https://classics.mit.edu/Homer/iliad.mb.txt'
+parser = argparse.ArgumentParser(description="RAG based question answering.")
+parser.add_argument(
+    "--query", type=str, help="The query string for which you want to find an answer."
+),
 
 
-_ = load_dotenv(find_dotenv()) # read local .env file
-openai.api_key = os.environ['OPENAI_API_KEY']
+_ = load_dotenv(find_dotenv())  # read local .env file
+openai.api_key = os.environ["OPENAI_API_KEY"]
 
 openai_client = OpenAI()
 
 # collection_reference = process_text_from_url(url)
 # print(collection_reference)  # Use the reference to the collection as needed
 
-##args 
+args = parser.parse_args()
 
-query = "Who killed Hector and how?"
-# query = "How did the Greeks enter in Troy?"
-# query = "How did Achilles die?" 
-# query = "Who fought against Hyrtius son of Gyrtius?"
+query = args.query
 
-# aug_query_plus_answer = augment_query_generated(query,openai_client)
-# aug_query_mult_query = augment_multiple_query(query, openai_client)
+chroma_collection = get_vector_db_reference()
 
-# print(aug_query_mult_query)
-# print(aug_query_plus_answer)
+# aug_query = augment_query_generated(query,openai_client)
+aug_query = augment_multiple_query(query, openai_client)
+
 # print(collection_reference, type(collection_reference))
-results = chroma_collection.query(query_texts=[query], n_results=5)
+print("XXX", aug_query)
 
-retrieved_documents = results['documents'][0]
+results = chroma_collection.query(query_texts=[aug_query], n_results=5)
+
+retrieved_documents = results["documents"][0]
+
 
 information = "\n\n".join(retrieved_documents)
 
-# print("information:", information)
+print("information:", information)
 
-print("reponse finale:", rag(query, information, chroma_collection,openai_client))
+print("reponse finale:", rag(query, information, chroma_collection, openai_client))
